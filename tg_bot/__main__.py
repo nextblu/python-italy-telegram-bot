@@ -45,9 +45,9 @@ from tg_bot.modules.helper_funcs.misc import paginate_modules
 PM_START_TEXT = """
 Ciao {}, io sono {}! Il bot numero 1 di python_ita. Se hai qualche dubbio su come usarmi, leggi l'output del comando /help .
 
-Se vuoi contribuire al bot contatta @itsMett oppure @christiancavuti :).
+Se vuoi contribuire al bot guarda la repo ufficiale: https://github.com/Kavuti/python-italy-telegram-bot/ :).
 
-Se pensi che io sia un buon bot, e/o ti piacerebbe aiutarmi a sopravvivere nella giungla, scrivi /donate per aiutarmi ad aggiornare i miei server!
+Se pensi che io sia un buon bot, e/o ti piacerebbe aiutarmi a sopravvivere nella giungla, sarei molto felice di ricevere una PR su GH!
 """
 
 HELP_STRINGS = """
@@ -55,10 +55,9 @@ Ciao! Io sono *{}*.
 Sono il bot principale del gruppo PythonItalia
 
 I *principali* comandi disponibili sono:
- - /start: start the bot
- - /help: PM's you this message.
- - /help <module name>: PM's you info about that module.
- - /donate: information about how to donate!
+ - /start: avvia il bot
+ - /help: messaggio privato con l'help.
+ - /help <module name>: messaggio privato con le informazioni su <module>.
  - /settings:
    - in PM: will send you your settings for all supported modules.
    - in a group: will redirect you to pm, with all that chat's settings.
@@ -67,7 +66,7 @@ I *principali* comandi disponibili sono:
 E anche questi:
 """.format(
     dispatcher.bot.first_name,
-    "" if not ALLOW_EXCL else "\nAll commands can either be used with / or !.\n",
+    "" if not ALLOW_EXCL else "\nTutti i comandi possono essere richiamati con / oppure !.\n",
 )
 
 DONATE_STRING = """Heya, felice di sentire che vuoi donare!
@@ -522,7 +521,7 @@ def donate(bot: Bot, update: Update):
             DONATE_STRING, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True
         )
 
-        if OWNER_ID != 254318997 and DONATION_LINK:
+        if DONATION_LINK:
             update.effective_message.reply_text(
                 "Puoi donare all'associazione qui " "[here]({})".format(DONATION_LINK),
                 parse_mode=ParseMode.MARKDOWN,
