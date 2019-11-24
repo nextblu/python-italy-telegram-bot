@@ -72,7 +72,7 @@ def can_pin(func):
             return func(bot, update, *args, **kwargs)
         else:
             update.effective_message.reply_text(
-                "NOn posso pinnare i messaggi! " "Assicurati di avermi fatto admin."
+                "Non posso pinnare i messaggi! " "Assicurati di avermi fatto admin."
             )
 
     return pin_rights
