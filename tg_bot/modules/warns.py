@@ -109,7 +109,7 @@ def warn(
             ]
         )
 
-        reply = "{} ha {}/{} ammonimenti... Per favore presta più attenzioni alle regole.".format(
+        reply = "{} ha {}/{} ammonimenti... Per favore attieniti al Codice di Condotta e ricordati di rispettare sempre gli altri utenti.".format(
             mention_html(user.id, user.first_name), num_warns, limit
         )
         if reason:
