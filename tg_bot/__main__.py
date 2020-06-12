@@ -70,10 +70,9 @@ E anche questi:
 )
 
 DONATE_STRING = """Heya, felice di sentire che vuoi donare!
-Tutti i soldi per le donazioni andranno per una VPS migliore per ospitarmi e/o birra \
-per ora il canale delle donazioni non è attivo."""
+Attualmente il sistema di donazioni per il bot non è attivo."""
 
-COC_STRING = """Hey! Complimenti e benvenuto su Python Italia. \nOra puoi chattare nel gruppo e inviare messaggi :)\nSe hai ancora bisogno di me puoi
+COC_STRING = """Hey! Grazie per la verifica e benvenuto su Python Italia. \nOra puoi chattare nel gruppo e inviare messaggi :)\nSe hai ancora bisogno di me puoi
 usare il comando /help per più informazioni.\n\n[Torna sul gruppo](https://t.me/python_ita)"""
 
 
@@ -387,7 +386,7 @@ def CoCDone(bot: Bot, update: Update):
         )
     else:
         update.effective_message.reply_text(
-            "Non hai letto le CoC? Sei una delusione... \nNon sei abilitato per questo comando.",
+            "Non hai letto le CoC? Prima di interagire nel gruppo devi prendere visione e accettare il Codice di Condotta... \nNon sei abilitato per questo comando.",
             parse_mode=ParseMode.MARKDOWN,
             disable_web_page_preview=True,
         )
@@ -537,11 +536,11 @@ def donate(bot: Bot, update: Update):
             )
 
             update.effective_message.reply_text(
-                "Ti ho inviato un messaggio privato su come donare!"
+                "Grazie per il tuo interesse. Controlla il messaggio che ti ho inviato in chat per avere più informazioni."
             )
         except Unauthorized:
             update.effective_message.reply_text(
-                "Contattami in privato per più informazioni su come donare."
+                "Grazie per il tuo interesse. Contattami in privato per avere più informazioni."
             )
 
 
