@@ -386,7 +386,7 @@ def CoCDone(bot: Bot, update: Update):
         )
     else:
         update.effective_message.reply_text(
-            "Non hai letto le CoC? Prima di interagire nel gruppo devi prendere visione e accettare il Codice di Condotta... \nNon sei abilitato per questo comando.",
+            "Prima di interagire nel gruppo devi prendere visione e accettare il Codice di Condotta.",
             parse_mode=ParseMode.MARKDOWN,
             disable_web_page_preview=True,
         )
