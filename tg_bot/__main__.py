@@ -45,7 +45,7 @@ from tg_bot.modules.helper_funcs.misc import paginate_modules
 PM_START_TEXT = """
 Ciao {}, io sono {}! Il bot numero 1 di python_ita. Se hai qualche dubbio su come usarmi, leggi l'output del comando /help .
 
-Se vuoi contribuire al bot guarda la repo ufficiale: https://github.com/Kavuti/python-italy-telegram-bot/ :).
+Se vuoi contribuire al bot guarda la repo ufficiale: https://github.com/pythonitalia/python-italy-telegram-bot :).
 
 Se pensi che io sia un buon bot, e/o ti piacerebbe aiutarmi a sopravvivere nella giungla, sarei molto felice di ricevere una PR su GH!
 """
