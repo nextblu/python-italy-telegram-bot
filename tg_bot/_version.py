@@ -1,2 +1,2 @@
 # PEP440 - STANDARDIZED VERSIONING SYSTEM
-__version__ = "$Revision: 1ce20de $"
+__version__ = "STABLE RELEASE v.1.2.7"

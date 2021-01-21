@@ -1,8 +1,6 @@
 import html
-import time
 from typing import Optional, List
 
-import requests as req
 from telegram import Message, Chat, Update, Bot, User
 from telegram import ParseMode, InlineKeyboardMarkup
 from telegram.error import BadRequest
@@ -19,7 +17,8 @@ from tg_bot.modules.helper_funcs.string_handling import (
     escape_invalid_curly_brackets,
 )
 from tg_bot.modules.log_channel import loggable
-from tg_bot import BAN_STICKER
+
+import requests as req
 
 VALID_WELCOME_FORMATTERS = [
     "first",
@@ -54,8 +53,8 @@ def send(update, message, keyboard, backup_message):
         msg = update.effective_message.reply_text(
             markdown_parser(
                 backup_message + "\nNota: Il messaggio corrente è "
-                                 "invalido a causa di problemi di markdown. Potrebbe essere a causa del "
-                                 "nome dell'utente."
+                "invalido a causa di problemi di markdown. Potrebbe essere a causa del "
+                "nome dell'utente."
             ),
             parse_mode=ParseMode.MARKDOWN,
         )
@@ -63,8 +62,8 @@ def send(update, message, keyboard, backup_message):
         msg = update.effective_message.reply_text(
             markdown_parser(
                 backup_message + "\nNote: the current message is "
-                                 "invalid due to an issue with some misplaced "
-                                 "curly brackets. Please update"
+                "invalid due to an issue with some misplaced "
+                "curly brackets. Please update"
             ),
             parse_mode=ParseMode.MARKDOWN,
         )
@@ -74,7 +73,7 @@ def send(update, message, keyboard, backup_message):
                 markdown_parser(
                     backup_message
                     + "\nNota: Il messaggio corrente ha un url non valido "
-                      "in uno dei bottoni. Per favore, aggiornarlo."
+                    "in uno dei bottoni. Per favore, aggiornarlo."
                 ),
                 parse_mode=ParseMode.MARKDOWN,
             )
@@ -82,8 +81,8 @@ def send(update, message, keyboard, backup_message):
             msg = update.effective_message.reply_text(
                 markdown_parser(
                     backup_message + "\nNota: il messaggio corrente ha bottoni che "
-                                     "usano un protocollo per gli url non supportato da "
-                                     "Telegram. Per favore, aggiornarlo."
+                    "usano un protocollo per gli url non supportato da "
+                    "Telegram. Per favore, aggiornarlo."
                 ),
                 parse_mode=ParseMode.MARKDOWN,
             )
@@ -92,7 +91,7 @@ def send(update, message, keyboard, backup_message):
                 markdown_parser(
                     backup_message
                     + "\nNota: il messaggio corrente ha degli url difettosi. "
-                      "Per favore, aggiornarlo.."
+                    "Per favore, aggiornarlo.."
                 ),
                 parse_mode=ParseMode.MARKDOWN,
             )
@@ -104,7 +103,7 @@ def send(update, message, keyboard, backup_message):
                 markdown_parser(
                     backup_message
                     + "\nNota: un errore si è verificato quando ho provato  "
-                      "a inviare il messaggio customizzato. Per favore, risolvere l'errore."
+                    "a inviare il messaggio customizzato. Per favore, risolvere l'errore."
                 ),
                 parse_mode=ParseMode.MARKDOWN,
             )
@@ -131,127 +130,118 @@ def cas_banned(userid):
 @run_async
 def new_member(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
-    new_members = update.effective_message.new_chat_members
-    message = update.effective_message
 
     should_welc, cust_welcome, welc_type = sql.get_welc_pref(chat.id)
     if should_welc:
         sent = None
+        new_members = update.effective_message.new_chat_members
         for new_mem in new_members:
-            # Check if the username is defined
-            if new_mem.username:
-                # Check if the user is cas-banned
-                if not cas_banned(new_mem.id):
-                    # Give the owner a special welcome
-                    if new_mem.id == OWNER_ID:
-                        update.effective_message.reply_text(
-                            "Salve capo!"
-                        )
-                        continue
+            # Check if the user is cas-banned
+            if not cas_banned(new_mem.id):
+                # Give the owner a special welcome
+                if new_mem.id == OWNER_ID:
+                    update.effective_message.reply_text(
+                        "Salve capo!"
+                    )
+                    continue
 
-                    # Don't welcome yourself
-                    elif new_mem.id == bot.id:
-                        continue
-
-                    else:
-                        # Muting new users
-                        bot.restrict_chat_member(
-                            chat.id, new_mem.id, can_send_messages=False
-                        )
-
-                        # If welcome message is media, send with appropriate function
-                        if (
-                                welc_type != sql.Types.TEXT
-                                and welc_type != sql.Types.BUTTON_TEXT
-                        ):
-                            ENUM_FUNC_MAP[welc_type](chat.id, cust_welcome)
-                            return
-                        # else, move on
-                        first_name = (
-                                new_mem.first_name or "PersonWithNoName"
-                        )  # edge case of empty name - occurs for some bugs.
-
-                        if cust_welcome:
-                            if new_mem.last_name:
-                                fullname = "{} {}".format(first_name, new_mem.last_name)
-                            else:
-                                fullname = first_name
-                            count = chat.get_members_count()
-                            mention = mention_markdown(new_mem.id, first_name)
-                            if new_mem.username:
-                                username = "@" + escape_markdown(new_mem.username)
-                            else:
-                                username = mention
-
-                            valid_format = escape_invalid_curly_brackets(
-                                cust_welcome, VALID_WELCOME_FORMATTERS
-                            )
-                            res = valid_format.format(
-                                first=escape_markdown(first_name),
-                                last=escape_markdown(new_mem.last_name or first_name),
-                                fullname=escape_markdown(fullname),
-                                username=username,
-                                mention=mention,
-                                count=count,
-                                chatname=escape_markdown(chat.title),
-                                id=new_mem.id,
-                            )
-                            buttons = sql.get_welc_buttons(chat.id)
-                            keyb = build_keyboard(buttons)
-                        else:
-                            res = sql.DEFAULT_WELCOME.format(first=first_name)
-                            keyb = []
-
-                        keyboard = InlineKeyboardMarkup(keyb)
-
-                        sent = send(
-                            update,
-                            res,
-                            keyboard,
-                            sql.DEFAULT_WELCOME.format(first=first_name),
-                        )  # type: Optional[Message]
+                # Don't welcome yourself
+                elif new_mem.id == bot.id:
+                    continue
 
                 else:
-                    # BEGINNING THE BAN
-                    log = (
-                        "<b>CAS BAN:</b>" "\n#CASBAN" "\n<b>User:</b> {}".format(new_mem.id)
+                    # Muting new users
+                    bot.restrict_chat_member(
+                        chat.id, new_mem.id, can_send_messages=False
                     )
 
-                    reason = "Ban via CAS api query"
+                    # If welcome message is media, send with appropriate function
+                    if (
+                        welc_type != sql.Types.TEXT
+                        and welc_type != sql.Types.BUTTON_TEXT
+                    ):
+                        ENUM_FUNC_MAP[welc_type](chat.id, cust_welcome)
+                        return
+                    # else, move on
+                    first_name = (
+                        new_mem.first_name or "PersonWithNoName"
+                    )  # edge case of empty name - occurs for some bugs.
 
-                    if reason:
-                        log += "\n<b>Motivo:</b> {}".format(reason)
-
-                    user_id = new_mem.id
-                    try:
-                        chat.kick_member(user_id)
-                        bot.send_sticker(chat.id, BAN_STICKER)  # banhammer electus sticker
-                        message.reply_text("BANNATO VIA SISTEMA AUTOMATICO CAS!")
-                        return log
-
-                    except BadRequest as excp:
-                        if excp.message == "Reply message not found":
-                            # Do not reply
-                            message.reply_text("BANNATO!", quote=False)
-                            return log
+                    if cust_welcome:
+                        if new_mem.last_name:
+                            fullname = "{} {}".format(first_name, new_mem.last_name)
                         else:
-                            LOGGER.warning(update)
-                            LOGGER.exception(
-                                "ERROR in CAS banning user %s in chat %s (%s) due to %s",
-                                user_id,
-                                chat.title,
-                                chat.id,
-                                excp.message,
-                            )
-                            message.reply_text(
-                                "Diamine, non riesco a bannare questo utente."
-                            )
+                            fullname = first_name
+                        count = chat.get_members_count()
+                        mention = mention_markdown(new_mem.id, first_name)
+                        if new_mem.username:
+                            username = "@" + escape_markdown(new_mem.username)
+                        else:
+                            username = mention
+
+                        valid_format = escape_invalid_curly_brackets(
+                            cust_welcome, VALID_WELCOME_FORMATTERS
+                        )
+                        res = valid_format.format(
+                            first=escape_markdown(first_name),
+                            last=escape_markdown(new_mem.last_name or first_name),
+                            fullname=escape_markdown(fullname),
+                            username=username,
+                            mention=mention,
+                            count=count,
+                            chatname=escape_markdown(chat.title),
+                            id=new_mem.id,
+                        )
+                        buttons = sql.get_welc_buttons(chat.id)
+                        keyb = build_keyboard(buttons)
+                    else:
+                        res = sql.DEFAULT_WELCOME.format(first=first_name)
+                        keyb = []
+
+                    keyboard = InlineKeyboardMarkup(keyb)
+
+                    sent = send(
+                        update,
+                        res,
+                        keyboard,
+                        sql.DEFAULT_WELCOME.format(first=first_name),
+                    )  # type: Optional[Message]
+
             else:
-                # Kicking the user because of the username
+                # BEGINNING THE BAN
+                log = (
+                    "<b>CAS BAN:</b>" "\n#CASBAN" "\n<b>User:</b> {}".format(new_mem.id)
+                )
+
+                reason = "Ban via CAS api query"
+
+                if reason:
+                    log += "\n<b>Motivo:</b> {}".format(reason)
+
                 user_id = new_mem.id
-                chat.kick_member(user_id, until_date=time.time() + 300)
-                bot.send_sticker(chat.id, BAN_STICKER)  # banhammer electus sticker
-                message.reply_text("L'utente non ha uno username, quindi è stato rimosso.")
+                try:
+                    chat.kick_member(user_id)
+                    bot.send_sticker(chat.id, BAN_STICKER)  # banhammer electus sticker
+                    message.reply_text("BANNATO VIA SISTEMA AUTOMATICO CAS!")
+                    return log
+
+                except BadRequest as excp:
+                    if excp.message == "Reply message not found":
+                        # Do not reply
+                        message.reply_text("BANNATO!", quote=False)
+                        return log
+                    else:
+                        LOGGER.warning(update)
+                        LOGGER.exception(
+                            "ERROR in CAS banning user %s in chat %s (%s) due to %s",
+                            user_id,
+                            chat.title,
+                            chat.id,
+                            excp.message,
+                        )
+                        message.reply_text(
+                            "Diamine, non riesco a bannare questo utente."
+                        )
 
         prev_welc = sql.get_clean_pref(chat.id)
         if prev_welc:
@@ -286,7 +276,7 @@ def left_member(bot: Bot, update: Update):
                 return
 
             first_name = (
-                    left_mem.first_name or "PersonWithNoName"
+                left_mem.first_name or "PersonWithNoName"
             )  # edge case of empty name - occurs for some bugs.
             if cust_goodbye:
                 if left_mem.last_name:

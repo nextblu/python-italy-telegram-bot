@@ -1,6 +1,5 @@
 from functools import wraps
 from typing import Optional
-
 from tg_bot.modules.helper_funcs.misc import is_module_loaded
 
 FILENAME = __name__.rsplit(".", 1)[-1]
@@ -17,7 +16,6 @@ if is_module_loaded(FILENAME):
     from tg_bot.modules.sql import log_channel_sql as sql
     import requests
     import tldextract
-
 
     def loggable(func):
         @wraps(func)
@@ -47,7 +45,6 @@ if is_module_loaded(FILENAME):
             return result
 
         return log_action
-
 
     @run_async
     def log_resource(bot: Bot, update: Update):
@@ -84,7 +81,6 @@ if is_module_loaded(FILENAME):
             elif descriptor["type"] == MessageEntity.TEXT_LINK:
                 to_manage = descriptor['url']
             log_for_entity(bot, chat, to_manage, log_chat, result, tags)
-
 
     def log_for_entity(bot, chat, entity, log_chat, result, tags):
         try:
@@ -125,7 +121,6 @@ if is_module_loaded(FILENAME):
                     + "\n\nFormattazione disattivata a causa di un errore sconosciuto.",
                 )
 
-
     @run_async
     @user_admin
     def logging(bot: Bot, update: Update):
@@ -144,7 +139,6 @@ if is_module_loaded(FILENAME):
 
         else:
             message.reply_text("Nessun log-channel è stato impostato per questo gruppo")
-
 
     @run_async
     @user_admin
@@ -191,7 +185,6 @@ if is_module_loaded(FILENAME):
                 " - inoltra /setlog al gruppo che vuoi loggare\n"
             )
 
-
     @run_async
     @user_admin
     def unsetlog(bot: Bot, update: Update):
@@ -208,14 +201,11 @@ if is_module_loaded(FILENAME):
         else:
             message.reply_text("Nessun log-channel è stato ancora collegato!")
 
-
     def __stats__():
         return "{} log-channel impostato.".format(sql.num_logchannels())
 
-
     def __migrate__(old_chat_id, new_chat_id):
         sql.migrate_chat(old_chat_id, new_chat_id)
-
 
     def __chat_settings__(chat_id, user_id):
         log_channel = sql.get_chat_log_channel(chat_id)
@@ -225,7 +215,6 @@ if is_module_loaded(FILENAME):
                 escape_markdown(log_channel_info.title), log_channel
             )
         return "Nessun log-channel è stato impostato per il gruppo!"
-
 
     __help__ = """
 *Admin only:*
@@ -247,9 +236,9 @@ Setting the log channel is done by:
 
     LOG_RESOURCES_HANDLER = MessageHandler(
         (
-                Filters.entity("url")
-                | Filters.entity("text_link")
-                | Filters.entity("hashtag")
+            Filters.entity("url")
+            | Filters.entity("text_link")
+            | Filters.entity("hashtag")
         ),
         log_resource,
     )

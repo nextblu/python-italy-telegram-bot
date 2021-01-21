@@ -84,46 +84,49 @@ def ensure_bot_in_db():
 
 
 def update_user(user_id, username, chat_id=None, chat_name=None):
-    with INSERTION_LOCK:
-        user = SESSION.query(Users).get(user_id)
-        if not user:
-            user = Users(user_id, username)
-            SESSION.add(user)
-            SESSION.flush()
-        else:
-            user.username = username
+    try:
+        with INSERTION_LOCK:
+            user = SESSION.query(Users).get(user_id)
+            if not user:
+                user = Users(user_id, username)
+                SESSION.add(user)
+                SESSION.flush()
+            else:
+                user.username = username
 
-        if not chat_id or not chat_name:
-            SESSION.commit()
-            return
+            if not chat_id or not chat_name:
+                SESSION.commit()
+                return
 
-        chat = SESSION.query(Chats).get(str(chat_id))
-        if not chat:
-            chat = Chats(str(chat_id), chat_name)
-            SESSION.add(chat)
-            SESSION.flush()
+            chat = SESSION.query(Chats).get(str(chat_id))
+            if not chat:
+                chat = Chats(str(chat_id), chat_name)
+                SESSION.add(chat)
+                SESSION.flush()
 
-        else:
-            chat.chat_name = chat_name
+            else:
+                chat.chat_name = chat_name
 
-        member = (
-            SESSION.query(ChatMembers)
+            member = (
+                SESSION.query(ChatMembers)
                 .filter(ChatMembers.chat == chat.chat_id, ChatMembers.user == user.user_id)
                 .first()
-        )
-        if not member:
-            chat_member = ChatMembers(chat.chat_id, user.user_id)
-            SESSION.add(chat_member)
+            )
+            if not member:
+                chat_member = ChatMembers(chat.chat_id, user.user_id)
+                SESSION.add(chat_member)
 
-        SESSION.commit()
+            SESSION.commit()
+    except:
+        SESSION.rollback()
 
 
 def get_userid_by_name(username):
     try:
         return (
             SESSION.query(Users)
-                .filter(func.lower(Users.username) == username.lower())
-                .all()
+            .filter(func.lower(Users.username) == username.lower())
+            .all()
         )
     finally:
         SESSION.close()
@@ -184,8 +187,8 @@ def migrate_chat(old_chat_id, new_chat_id):
 
         chat_members = (
             SESSION.query(ChatMembers)
-                .filter(ChatMembers.chat == str(old_chat_id))
-                .all()
+            .filter(ChatMembers.chat == str(old_chat_id))
+            .all()
         )
         for member in chat_members:
             member.chat = str(new_chat_id)
